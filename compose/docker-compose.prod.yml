@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  api-prod:
+    container_name: api-prod
+    restart: unless-stopped
+    build:
+      context: ././TourVR_BE
+      dockerfile: Dockerfile.prod
+    environment:
+      - PORT=1612
+      - NODE_ENV=production
+    networks:
+      - tourvr
+
+  client-prod:
+    container_name: client-prod
+    restart: unless-stopped
+    build:
+      context: ./TourVR_FE
+      dockerfile: Dockerfile.prod
+    depends_on:
+      - api-prod
+    networks:
+      - tourvr
+
+  nginx:
+    image: nginx:1.21.5-alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - 1000:80
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api-prod
+      - client-prod
+    networks:
+      - tourvr
+
+networks:
+  tourvr:
